@@ -2,12 +2,13 @@ import cv2
 import numpy as np
 import face_recognition
 import os
-from openpyxl import load_workbook
+from openpyxl import Workbook, load_workbook
 import pandas as pd
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from PIL import Image
 import uuid
+from datetime import datetime
 
 excel_file = "data.xlsx"
 images = []
@@ -54,6 +55,30 @@ def findEncodings(images):
 encodeListKnown = findEncodings(images)
 print('Encoding Complete. Number of encodings:', len(encodeListKnown))
 
+# Function for check attandance 
+def markAttendance(name):
+    file_name = 'Attendance.xlsx'
+    
+    # Check if the Excel file exists, if not, create it and add the header
+    if not os.path.isfile(file_name):
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = 'Attendance'
+        sheet.append(['Name', 'Time'])  # Adding the header
+        workbook.save(file_name)
+    
+    # Open the Excel file and read data
+    workbook = load_workbook(file_name)
+    sheet = workbook.active
+    
+    # Collect existing names to prevent duplicates
+    nameList = [sheet.cell(row=i, column=1).value for i in range(2, sheet.max_row + 1)]
+    
+    if name not in nameList:
+        now = datetime.now()
+        dtString = now.strftime('%H:%M:%S')
+        sheet.append([name, dtString])  # Append new name and time
+        workbook.save(file_name)  # Save changes to the file
 # Face Detection and Verification
 def verifydata():
     cap = cv2.VideoCapture(0)
@@ -111,7 +136,8 @@ def verifydata():
                     cv2.putText(img, f"Gender: {info.get('gender', 'N/A')}", (card_x1 + 6, card_y1 + 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     cv2.putText(img, f"Hometown: {info.get('hometown', 'N/A')}", (card_x1 + 6, card_y1 + 80), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     cv2.putText(img, f"Address: {info.get('address', 'N/A')}", (card_x1 + 6, card_y1 + 100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-
+                    # Attandance checked 
+                    markAttendance(name)
         cv2.imshow('Webcam', img)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
