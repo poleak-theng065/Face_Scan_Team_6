@@ -121,8 +121,8 @@ def verifydata():
                 info = data_dict.get(name, {})
                 if info:
                     # Define card position above the rectangle
-                    card_x1, card_y1 = x1, y1 - 130
-                    card_x2, card_y2 = x2, y1 - 10
+                    card_x1, card_y1 = x1, y1 - 150
+                    card_x2, card_y2 = x2, y1 - 5
 
                     # Draw card background
                     cv2.rectangle(img, (card_x1, card_y1), (card_x2, card_y2), (0, 0, 255), cv2.FILLED)
