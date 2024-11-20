@@ -121,8 +121,8 @@ def verifydata():
                 info = data_dict.get(name, {})
                 if info:
                     # Define card position above the rectangle
-                    card_x1, card_y1 = x1, y1 - 150
-                    card_x2, card_y2 = x2, y1 - 5
+                    card_x1, card_y1 = x1, y1 - 130
+                    card_x2, card_y2 = x2, y1 - 10
 
                     # Draw card background
                     cv2.rectangle(img, (card_x1, card_y1), (card_x2, card_y2), (0, 0, 255), cv2.FILLED)
@@ -216,7 +216,7 @@ header_frame = tk.Frame(window, bg="#4CAF50", bd=0, relief="flat")
 header_frame.grid(row=0, column=0, columnspan=3, pady=10, sticky="ew")
 
 header_label = tk.Label(header_frame, text="Student Data Entry", font=("Helvetica", 18, "bold"))
-header_label.grid(row=10, column=10, padx=10, pady=10)
+header_label.grid(row=10, column=10, padx=150, pady=10)
 
 # Create labels and entry fields (with modern look)
 font_style = ("Arial", 12)
