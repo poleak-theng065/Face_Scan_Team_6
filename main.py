@@ -8,7 +8,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from PIL import Image
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 
 excel_file = "data.xlsx"
 images = []
@@ -59,12 +59,12 @@ print('Encoding Complete. Number of encodings:', len(encodeListKnown))
 def markAttendance(name):
     file_name = 'Attendance.xlsx'
     
-    # Check if the Excel file exists, if not, create it and add the header
+    # Check if the Excel file exists; if not, create it and add the header
     if not os.path.isfile(file_name):
         workbook = Workbook()
         sheet = workbook.active
         sheet.title = 'Attendance'
-        sheet.append(['Name', 'Time'])  # Adding the header
+        sheet.append(['Name', 'Time', 'Date'])  # Adding the header
         workbook.save(file_name)
     
     # Open the Excel file and read data
@@ -72,16 +72,21 @@ def markAttendance(name):
     sheet = workbook.active
     
     # Collect existing names to prevent duplicates
-    nameList = [sheet.cell(row=i, column=1).value for i in range(2, sheet.max_row + 1)]
+    nameList = [sheet.cell(row=row, column=1).value for row in range(2, sheet.max_row + 1)]
     
     if name not in nameList:
         now = datetime.now()
-        dtString = now.strftime('%H:%M:%S')
-        sheet.append([name, dtString])  # Append new name and time
+        timeString = now.strftime('%H:%M:%S')
+        dateString = now.strftime('%Y-%m-%d')
+        sheet.append([name, timeString, dateString])  # Append new name, time, and date
         workbook.save(file_name)  # Save changes to the file
+        print(f"{name} marked present at {timeString} on {dateString}.")
+    else:
+        print(f"{name} is already marked present.")
 # Face Detection and Verification
 def verifydata():
     cap = cv2.VideoCapture(0)
+    recognized_faces = {}  # To track when a face was last recognized
 
     while True:
         success, img = cap.read()
@@ -89,62 +94,69 @@ def verifydata():
             print("Failed to grab frame from webcam.")
             break
 
+        # Downscale frame for faster processing
         imgS = cv2.resize(img, (0, 0), None, 0.25, 0.25)
         imgS = cv2.cvtColor(imgS, cv2.COLOR_BGR2RGB)
 
+        # Detect faces and encode
         facesCurFrame = face_recognition.face_locations(imgS)
         encodesCurFrame = face_recognition.face_encodings(imgS, facesCurFrame)
 
         for encodeFace, faceLoc in zip(encodesCurFrame, facesCurFrame):
             matches = face_recognition.compare_faces(encodeListKnown, encodeFace)
             faceDis = face_recognition.face_distance(encodeListKnown, encodeFace)
-            
-            name = "Unknown"  # Default to "Unknown" if no match is found
 
+            name = "Unknown"
             if matches and any(matches):
                 matchIndex = np.argmin(faceDis)
                 if matches[matchIndex]:
-                    name = classNames[matchIndex]  # Update name if a match is found
+                    name = classNames[matchIndex]
 
-            # Draw rectangle around the face
+            # Draw rectangle around detected face
             y1, x2, y2, x1 = faceLoc
             y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
             cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 2)
 
-            # Display name above the rectangle
+            # Display the name above the rectangle
             label_y = y1 - 10 if y1 - 10 > 10 else y1 + 20
             cv2.putText(img, name, (x1, label_y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 
-            # If the name is not "Unknown", display additional info card
             if name != "Unknown":
-                # Fetch data
-                info = data_dict.get(name, {})
-                if info:
-                    # Define card position above the rectangle
-                    card_x1, card_y1 = x1, y1 - 130
-                    card_x2, card_y2 = x2, y1 - 10
+                now = datetime.now()
 
+                # Show info card if available
+                info = data_dict.get(name, {})
+                card_x1, card_y1 = x1, y1 - 130
+                card_x2, card_y2 = x2, y1 - 10
+
+                if info:
                     # Draw card background
                     cv2.rectangle(img, (card_x1, card_y1), (card_x2, card_y2), (0, 0, 255), cv2.FILLED)
-                    
-                    # Draw connecting line
                     cv2.line(img, (x1, y1), (card_x1, card_y2), (255, 255, 255), 2)
 
-                    # Add text to the card
+                    # Display text on the card
                     cv2.putText(img, f"Name: {name}", (card_x1 + 6, card_y1 + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     cv2.putText(img, f"Age: {info.get('age', 'N/A')}", (card_x1 + 6, card_y1 + 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     cv2.putText(img, f"Gender: {info.get('gender', 'N/A')}", (card_x1 + 6, card_y1 + 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     cv2.putText(img, f"Hometown: {info.get('hometown', 'N/A')}", (card_x1 + 6, card_y1 + 80), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     cv2.putText(img, f"Address: {info.get('address', 'N/A')}", (card_x1 + 6, card_y1 + 100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-                    # Attandance checked 
-                    markAttendance(name)
+
+                # Check recognition time and mark attendance after 5 seconds
+                if name in recognized_faces:
+                    if now - recognized_faces[name] > timedelta(seconds=5):
+                        markAttendance(name)
+                        print(f"Attendance marked for {name}")
+                        del recognized_faces[name]
+                else:
+                    recognized_faces[name] = now
+
+        # Display the webcam feed
         cv2.imshow('Webcam', img)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     cap.release()
     cv2.destroyAllWindows()
-
 
 
 # Function to save data to Excel
