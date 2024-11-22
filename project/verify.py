@@ -53,19 +53,31 @@ def find_encodings(images):
 # Function to process the face and return necessary information
 def process_face(img, facesCurFrame, encodesCurFrame, encodeListKnown, classNames, data_dict, face_recognition_start_time):
     for encodeFace, faceLoc in zip(encodesCurFrame, facesCurFrame):
-        # Check if the face matches any known face encoding
-        name, matches, faceDis = recognize_face(encodeFace, encodeListKnown, classNames)
-        
-        # Draw rectangle and name above the face
+        matches = face_recognition.compare_faces(encodeListKnown, encodeFace)
+        faceDis = face_recognition.face_distance(encodeListKnown, encodeFace)
+
+        name = "Unknown"  # Default to "Unknown" if no match is found
+        if matches and any(matches):
+            matchIndex = np.argmin(faceDis)
+            if matches[matchIndex]:
+                name = classNames[matchIndex]  # Update name if a match is found
+
+        # Draw rectangle around the face
         y1, x2, y2, x1 = faceLoc
-        y1, x2, y2, x1 = scale_face_locations(y1, x2, y2, x1)
-        
-        # Draw the rectangle and display the name
-        rectangle_color = (0, 0, 255) if name == "Unknown" else (0, 255, 0)
-        draw_face_rectangle(img, x1, y1, x2, y2, rectangle_color)
-        display_face_name(img, x1, y1, name)
-        
-        # Fetch data for recognized faces or handle unknown
+        y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
+
+        # If the name is "Unknown", use a red rectangle
+        rectangle_color = (0, 0, 255)  # Red for unknown faces
+        if name != "Unknown":
+            rectangle_color = (0, 255, 0)  # Green for known faces
+
+        cv2.rectangle(img, (x1, y1), (x2, y2), rectangle_color, 2)
+
+        # Display name above the rectangle
+        label_y = y1 - 10 if y1 - 10 > 10 else y1 + 20
+        cv2.putText(img, name, (x1, label_y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+
+        # Fetch data for recognized faces, or skip if "Unknown"
         if name != "Unknown":
             info = data_dict.get(name, {})
             if info:
@@ -74,37 +86,8 @@ def process_face(img, facesCurFrame, encodesCurFrame, encodeListKnown, className
         else:
             # Display "Unknown" info on the card
             display_info_card(img, x1, y1, x2, {"name": "Unknown", "age": "N/A", "gender": "N/A", "hometown": "N/A", "address": "N/A"})
-    
+
     return img, face_recognition_start_time
-
-
-# Recognize the face and return the name, matches, and distances
-def recognize_face(encodeFace, encodeListKnown, classNames):
-    matches = face_recognition.compare_faces(encodeListKnown, encodeFace)
-    faceDis = face_recognition.face_distance(encodeListKnown, encodeFace)
-    name = "Unknown"  # Default to "Unknown" if no match is found
-    if matches and any(matches):
-        matchIndex = np.argmin(faceDis)
-        if matches[matchIndex]:
-            name = classNames[matchIndex]  # Update name if a match is found
-    return name, matches, faceDis
-
-
-# Scale the face locations from small image to original image size
-def scale_face_locations(y1, x2, y2, x1):
-    y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
-    return y1, x2, y2, x1
-
-
-# Draw rectangle around the face
-def draw_face_rectangle(img, x1, y1, x2, y2, rectangle_color):
-    cv2.rectangle(img, (x1, y1), (x2, y2), rectangle_color, 2)
-
-
-# Display name above the rectangle
-def display_face_name(img, x1, y1, name):
-    label_y = y1 - 10 if y1 - 10 > 10 else y1 + 20
-    cv2.putText(img, name, (x1, label_y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 
 
 # Function to display information card
