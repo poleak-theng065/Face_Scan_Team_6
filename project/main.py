@@ -6,6 +6,7 @@ import pandas as pd
 from tkinter import  messagebox
 from PIL import Image
 import uuid
+import customtkinter as ctk
 
 
 # function for to save data that user have inputed
@@ -159,12 +160,42 @@ def verifyData():
     print( verify.verifydata())
     
 # Submit Button
-submit_button = tk.Button(window, text="Submit Data", command= save_data, font=("Arial", 12, "bold"), bg="#4CAF50", fg="white", relief="flat")
-submit_button.grid(row=7, column=0, columnspan=3, pady=20)
-# Verify Data
-verify_button = tk.Button(window, text="Verify Data", command= verifyData, font=("Arial", 12, "bold"), bg="#4CAF50", fg="white", relief="flat")
-verify_button.grid(row=14, column=0, columnspan=6, pady=40)
+# Define common button style parameters
+button_style_verify = {
+    "font": ("Arial", 12, "bold"),
+    "fg_color": "#4158D0",
+    "hover_color": "#C850C0",
+    "border_color": "#FFCC70",
+    "border_width": 2,
+    "corner_radius": 32
+}
+# Define common button style parameters
+button_style_submit = {
+    "font": ("Arial", 12, "bold"),
+    "fg_color": "red",
+    "hover_color": "black",
+    "border_color": "green",
+    "border_width": 2,
+    "corner_radius": 32
+}
 
+# Submit Button
+submit_button = ctk.CTkButton(
+    master=window,
+    text="Submit Data",
+    command=save_data,
+    **button_style_submit  # Apply common style
+)
+submit_button.grid(row=8, column=0, columnspan=3, pady=20)
+
+# Verify Button
+verify_button = ctk.CTkButton(
+    master=window,
+    text="Verify Data",
+    command=verifyData,
+    **button_style_verify  # Apply common style
+)
+verify_button.grid(row=12, column=0, columnspan=3, pady=20)
 # Run the application
 window.mainloop()
 
