@@ -178,34 +178,3 @@ def verifydata():
     cap.release()
     cv2.destroyAllWindows()
 
-# def verifydata():
-#     cap = cv2.VideoCapture(0)
-#     face_recognition_start_time = {}  # Initialize the tracking dictionary
-
-#     # Load data from Excel and find encodings
-#     excel_file = "dataOfStudent.xlsx"
-#     data_dict, images, classNames, imagePaths = load_data_from_excel(excel_file)
-#     encodeListKnown = find_encodings(images)
-
-#     while True:
-#         success, img = cap.read()
-#         if not success:
-#             print("Failed to grab frame from webcam.")
-#             break
-
-#         imgS = cv2.resize(img, (0, 0), None, 0.25, 0.25)
-#         imgS = cv2.cvtColor(imgS, cv2.COLOR_BGR2RGB)
-
-#         facesCurFrame = face_recognition.face_locations(imgS)
-#         encodesCurFrame = face_recognition.face_encodings(imgS, facesCurFrame)
-
-#         # Process faces and mark attendance if necessary
-#         img, face_recognition_start_time = process_face(img, facesCurFrame, encodesCurFrame, encodeListKnown, classNames, data_dict, face_recognition_start_time)
-
-#         cv2.imshow('Webcam', img)
-#         if cv2.waitKey(1) & 0xFF == ord('q'):
-#             break
-
-#     cap.release()
-#     cv2.destroyAllWindows()
-
