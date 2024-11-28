@@ -5,10 +5,10 @@ import pandas as pd
 from PIL import Image, ImageTk
 import uuid
 import customtkinter as ctk
-import verify
-def verify_Data_of_student():
-    print(verify.verifydata())
-
+import checkAttandance
+# Check attandance 
+def attandence_check():
+    print(checkAttandance.main())
 image_path = None
 preview_label = None
 image_label = None
@@ -31,7 +31,7 @@ def select_image():
             img.thumbnail((100, 100))  # Resize for preview
 
             # Convert to CTkImage for proper scaling
-            img_ctk = ctk.CTkImage(img, size=(50, 50))
+            img_ctk = ctk.CTkImage(img, size=(100, 100))
 
             # Update preview label with CTkImage
             preview_label.configure(image=img_ctk)
@@ -52,12 +52,12 @@ def create_center_frame(window):
 # Font text of label
 # Function to create header label
 def create_header(center_frame):
-    header_label = ctk.CTkLabel(center_frame, text="Student Data Entry", font=("Helvetica", 32, "bold"))
+    header_label = ctk.CTkLabel(center_frame, text="Student Data Entry", font=("Helvetica", 32, "bold"),text_color="#555")
     header_label.grid(row=0, column=0, columnspan=3, pady=20)
 
 # Function to create and return name input field
 def create_name_input(center_frame):
-    name_label = ctk.CTkLabel(center_frame, text="Name:", font=("Arial", 16))
+    name_label = ctk.CTkLabel(center_frame, text="Name:", font=("Arial", 16),text_color="#555")
     name_label.grid(row=1, column=0, padx=20, pady=10,sticky="e")
     name_entry = ctk.CTkEntry(center_frame, font=("Arial", 16),text_color="blue")
     name_entry.grid(row=1, column=1, padx=20, pady=10,sticky="w")
@@ -65,7 +65,7 @@ def create_name_input(center_frame):
 
 # Function to create and return age input field
 def create_age_input(center_frame):
-    age_label = ctk.CTkLabel(center_frame, text="Age:", font=("Arial", 16))
+    age_label = ctk.CTkLabel(center_frame, text="Age:", font=("Arial", 16),text_color="#555")
     age_label.grid(row=2, column=0, padx=20, pady=10, sticky="e")
     age_entry = ctk.CTkEntry(center_frame, font=("Arial", 16))
     age_entry.grid(row=2, column=1, padx=20, pady=10, sticky="w")
@@ -82,7 +82,7 @@ def clear_entries():
 
 # Function to create and return gender input options
 def create_gender_input(center_frame):
-    gender_label = ctk.CTkLabel(center_frame, text="Gender:", font=("Arial", 16))
+    gender_label = ctk.CTkLabel(center_frame, text="Gender:", font=("Arial", 16),text_color="#555")
     gender_label.grid(row=3, column=0, padx=20, pady=10, sticky="e")
     gender_var = tk.StringVar(value=None)
     male_rb = ctk.CTkRadioButton(center_frame, text="Male", variable=gender_var, value="Male", font=("Arial", 16))
@@ -93,7 +93,7 @@ def create_gender_input(center_frame):
 
 # Function to create and return hometown input field
 def create_hometown_input(center_frame):
-    hometown_label = ctk.CTkLabel(center_frame, text="Hometown:", font=("Arial", 16))
+    hometown_label = ctk.CTkLabel(center_frame, text="Hometown:", font=("Arial", 16),text_color="#555")
     hometown_label.grid(row=4, column=0, padx=20, pady=10, sticky="e")
     hometown_entry = ctk.CTkEntry(center_frame, font=("Arial", 16))
     hometown_entry.grid(row=4, column=1, padx=20, pady=10, sticky="w")
@@ -101,7 +101,7 @@ def create_hometown_input(center_frame):
 
 # Function to create and return class input field
 def create_class_input(center_frame):
-    class_label = ctk.CTkLabel(center_frame, text="Class:", font=("Arial", 16))
+    class_label = ctk.CTkLabel(center_frame, text="Class:", font=("Arial", 16),text_color="#555")
     class_label.grid(row=5, column=0, padx=20, pady=10, sticky="e")
     class_entry = ctk.CTkEntry(center_frame, font=("Arial", 16))
     class_entry.grid(row=5, column=1, padx=20, pady=10, sticky="w")
@@ -111,14 +111,15 @@ def create_class_input(center_frame):
 def create_image_section(center_frame):
     global image_label, preview_label
 
-    image_label = ctk.CTkLabel(center_frame, text="No Image Selected", font=("Arial", 12))
+    image_label = ctk.CTkLabel(center_frame, text="No Image Selected", font=("Arial", 12),text_color="#555")
     image_label.grid(row=6, column=0, columnspan=2, padx=20, pady=10, sticky="w")
     select_image_button = ctk.CTkButton(center_frame, text="Select Image", command=select_image)
     select_image_button.grid(row=6, column=2, padx=10, pady=10)
 
     preview_label = ctk.CTkLabel(center_frame, text="", width=100, height=100, fg_color="gray")
     preview_label.grid(row=6, column=3, padx=10, pady=10)
-
+    
+# save data to exel
 def save_data():
     name = name_entry.get()
     age = age_entry.get()
@@ -169,8 +170,14 @@ def save_data():
     except Exception as e:
         messagebox.showerror("Error", f"An error occurred while saving data: {e}")
 
+# Function to toggle between light and dark modes
+def toggle_appearance_mode():
+    current_mode = ctk.get_appearance_mode()
+    new_mode = "Dark" if current_mode == "Light" else "Light"
+    ctk.set_appearance_mode(new_mode)
+
 # Function to create buttons
-def create_buttons(center_frame):
+def create_buttons(center_frame,window):
     submit_button = ctk.CTkButton(center_frame, text="Submit Data",
                                                 command=save_data, 
                                                 fg_color="green", 
@@ -179,13 +186,24 @@ def create_buttons(center_frame):
                                                 height=30)
     submit_button.grid(row=7, column=1, pady=10)
 
-    verify_button = ctk.CTkButton(center_frame, text="Verify Data", 
-                                                command=verify_Data_of_student, 
+    verify_button = ctk.CTkButton(center_frame, text="Continue", 
+                                                command=attandence_check, 
                                                 fg_color="blue", 
                                                 hover_color="lightblue",
                                                 width=200,
                                                 height=30)
     verify_button.grid(row=8, column=1, pady=10)
+     # Toggle Theme button
+    toggle_button = ctk.CTkButton(
+        window,
+        text="Toggle Theme",
+        command=toggle_appearance_mode,
+        width=150,
+        fg_color="#008CBA",
+        hover_color="#0078A0",
+        font=("Helvetica", 14)
+    )
+    toggle_button.place(relx=0.1, rely=0.05, anchor="center")
 
 # Main function to create the window and form
 def create_student_data_form():
@@ -215,6 +233,6 @@ def create_student_data_form():
     create_image_section(center_frame)
 
     # Buttons for submitting and verifying data
-    create_buttons(center_frame)
+    create_buttons(center_frame,window)
     window.mainloop()
 

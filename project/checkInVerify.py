@@ -1,9 +1,52 @@
 import cv2
 import numpy as np
 import face_recognition
-import os
+from openpyxl import  load_workbook
+from tkinter import filedialog, messagebox
+from datetime import datetime
 from openpyxl import Workbook, load_workbook
-import attandance
+import os
+import pyttsx3  # For text-to-speech
+
+# Initialize the text-to-speech engine
+engine = pyttsx3.init()
+
+# Function to speak a greeting
+def speak_greeting(name):
+    greeting = f"Good morning {name} to my company and good luck with your works today."
+    engine.say(greeting)
+    engine.runAndWait()
+
+
+# Function to check attendance
+def markAttendance_checkin(name):
+    file_name = 'CheckInAttendance.xlsx'
+
+    if not os.path.isfile(file_name):
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = 'CheckInAttendance'
+        sheet.append(['Name', 'Date', 'Time', 'DateTime'])
+        workbook.save(file_name)
+
+    workbook = load_workbook(file_name)
+    sheet = workbook.active
+    nameList = [sheet.cell(row=row, column=1).value for row in range(2, sheet.max_row + 1)]
+
+    if name not in nameList:
+        now = datetime.now()
+        dateString = now.strftime('%Y-%m-%d')
+        timeString = now.strftime('%H:%M:%S')
+        dateTimeString = now.strftime('%Y-%m-%d %H:%M:%S')
+
+        sheet.append([name, dateString, timeString, dateTimeString])
+        workbook.save(file_name)
+        print(f"Attendance marked for {name}.")
+        speak_greeting(name)  # Add sound greeting when attendance is marked
+    else:
+        print(f"{name} is already marked as present.")
+
+
 
 # Function to load data from Excel
 def load_data_from_excel(excel_file):
@@ -105,7 +148,7 @@ def display_info_card_with_animation(img, x1, y1, x2, info, frame_count):
     overlay = img.copy()
 
     # Draw a transparent rectangle for the card
-    alpha = 0.6  # Transparency factor
+    alpha = 0.3  # Transparency factor
     cv2.rectangle(overlay, (card_x1, card_y1), (card_x2, card_y2), cv2.FILLED)
     cv2.addWeighted(overlay, alpha, img, 1 - alpha, 0, img)
 
@@ -139,12 +182,12 @@ def track_and_mark_attendance(name, face_recognition_start_time):
         face_recognition_start_time[name] = current_time  # Start tracking time
     elif current_time - face_recognition_start_time[name] >= 8:
         # Mark attendance after 8 seconds
-        attandance.markAttendance(name)
-        print(f"Attendance marked for {name}.")
+        markAttendance_checkin(name)
+        print(f"Attendance marked for {name} has chekout sucessfully.")
         del face_recognition_start_time[name]  # Reset timer for this person
 
 # Main function to verify faces and mark attendance
-def verifydata():
+def verifydata_checkin():
     cap = cv2.VideoCapture(0)
     face_recognition_start_time = {}  # Initialize the tracking dictionary
     frame_count_dict = {}  # Initialize the frame count dictionary for animations
@@ -177,4 +220,3 @@ def verifydata():
 
     cap.release()
     cv2.destroyAllWindows()
-
