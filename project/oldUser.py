@@ -3,10 +3,15 @@ from PIL import Image
 
 # Import modules for Check In and Check Out
 try:
+    import main
     import checkInVerify
     import checkOutverify
 except ImportError as e:
     print(f"Error importing module: {e}")
+# back 
+def back():
+    result = main.create_main_window()
+    update_feedback(f"Check In: {result}", "green")
 
 # Function to handle Check In
 def verify_data_checkin():
@@ -15,7 +20,7 @@ def verify_data_checkin():
 
 # Function to handle Check Out
 def verify_data_checkout():
-    result = checkOutverify.verifydata_checkout()
+    result = checkOutverify.verifydata_checkOut()
     update_feedback(f"Check Out: {result}", "red")
 
 # Function to update feedback label
@@ -116,19 +121,19 @@ def add_buttons(window, frame):
     toggle_button.place(relx=0.1, rely=0.05, anchor="center")
 
     # Exit button
-    exit_button = ctk.CTkButton(
+    back_button = ctk.CTkButton(
         window,
-        text="Exit",
-        command=window.destroy,
+        text="Go Back",
+        command=back,
         width=100,
         fg_color="#D9534F",
         hover_color="#C9302C",
         font=("Helvetica", 14)
     )
-    exit_button.place(relx=0.9, rely=0.05, anchor="center")
+    back_button.place(relx=0.9, rely=0.05, anchor="center")
 
 # Main function to create the welcome screen
-def create_main_window():
+def create_check_window():
     # Initialize the main window
     window = ctk.CTk()
     window.title("Welcome Screen")

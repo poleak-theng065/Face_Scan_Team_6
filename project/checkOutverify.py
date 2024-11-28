@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 import face_recognition
 from openpyxl import  load_workbook
-from tkinter import filedialog, messagebox
 from datetime import datetime
 from openpyxl import Workbook, load_workbook
 import os
@@ -20,13 +19,13 @@ def speak_greeting(name):
 
 # Function to check attendance
 def markAttendance_checkout(name):
-    file_name = 'CheckInAttendance.xlsx'
+    file_name = 'CheckAttendance.xlsx'
 
     if not os.path.isfile(file_name):
         workbook = Workbook()
         sheet = workbook.active
-        sheet.title = 'CheckInAttendance'
-        sheet.append(['Name', 'Date', 'Time', 'DateTime'])
+        sheet.title = 'CheckAttendance'
+        sheet.append(['Name', 'Date', 'Time', 'Check Out Time'])
         workbook.save(file_name)
 
     workbook = load_workbook(file_name)
@@ -187,7 +186,7 @@ def track_and_mark_attendance(name, face_recognition_start_time):
         del face_recognition_start_time[name]  # Reset timer for this person
 
 # Main function to verify faces and mark attendance
-def verifydata_checkin():
+def verifydata_checkOut():
     cap = cv2.VideoCapture(0)
     face_recognition_start_time = {}  # Initialize the tracking dictionary
     frame_count_dict = {}  # Initialize the frame count dictionary for animations

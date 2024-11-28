@@ -13,38 +13,58 @@ engine = pyttsx3.init()
 
 # Function to speak a greeting
 def speak_greeting(name):
-    greeting = f"Good morning {name} to my company and good luck with your works today."
+    current_hour = datetime.now().hour
+    if current_hour < 12:
+        greeting = f"Good morning {name}! Have a productive day."
+    elif current_hour < 18:
+        greeting = f"Good afternoon {name}! Hope your day is going well."
+    else:
+        greeting = f"Good evening {name}! Great to see you."
     engine.say(greeting)
     engine.runAndWait()
 
-
-# Function to check attendance
-def markAttendance_checkin(name):
-    file_name = 'CheckInAttendance.xlsx'
-
+# Function to manage attendance (check-in and check-out)
+def markAttendance(name, action="check"):
+    file_name = 'CheckAttendance.xlsx'
+    
+    # Check if the file exists. If not, create it and add headers
     if not os.path.isfile(file_name):
         workbook = Workbook()
         sheet = workbook.active
-        sheet.title = 'CheckInAttendance'
-        sheet.append(['Name', 'Date', 'Time', 'DateTime'])
+        sheet.append(['Name', 'Date', 'Check-In Time', 'Check-In Status', 'Check-Out Time', 'Check-Out Status'])
         workbook.save(file_name)
-
+    
+    # Load the existing workbook
     workbook = load_workbook(file_name)
     sheet = workbook.active
-    nameList = [sheet.cell(row=row, column=1).value for row in range(2, sheet.max_row + 1)]
+    now = datetime.now()
+    today_date = now.strftime('%Y-%m-%d')
+    current_time = now.strftime('%H:%M:%S')
 
-    if name not in nameList:
-        now = datetime.now()
-        dateString = now.strftime('%Y-%m-%d')
-        timeString = now.strftime('%H:%M:%S')
-        dateTimeString = now.strftime('%Y-%m-%d %H:%M:%S')
+    # Define thresholds for check-in and check-out
+    check_in_deadline = datetime.strptime('07:00:00', '%H:%M:%S').time()
+    check_out_deadline = datetime.strptime('16:00:00', '%H:%M:%S').time()
 
-        sheet.append([name, dateString, timeString, dateTimeString])
+    # Loop through all rows in the sheet to see if the student is already in the attendance list for today
+    for row in sheet.iter_rows(min_row=2, values_only=False):
+        if row[0].value == name and row[1].value == today_date:
+            if action == "check-out" and row[4].value is None:  # If check-out is not already marked
+                row[4].value = current_time
+                check_out_time = datetime.strptime(current_time, '%H:%M:%S').time()
+                row[5].value = "Early" if check_out_time < check_out_deadline else "Late"
+                workbook.save(file_name)
+                return f"Check-out time recorded as {row[5].value} for {name}."
+            return f"{name} has already checked in today."
+
+    # If no existing check-in record found, add a new entry for check-in
+    if action == "check-in":
+        check_in_time = datetime.strptime(current_time, '%H:%M:%S').time()
+        check_in_status = "Early" if check_in_time <= check_in_deadline else "Late"
+        sheet.append([name, today_date, current_time, check_in_status, None, None])
         workbook.save(file_name)
-        print(f"Attendance marked for {name}.")
-        speak_greeting(name)  # Add sound greeting when attendance is marked
-    else:
-        print(f"{name} is already marked as present.")
+        return f"Check-in time recorded as {check_in_status} for {name}."
+
+    return f"No check-in record found for {name} to update check-out."
 
 
 
@@ -182,7 +202,7 @@ def track_and_mark_attendance(name, face_recognition_start_time):
         face_recognition_start_time[name] = current_time  # Start tracking time
     elif current_time - face_recognition_start_time[name] >= 8:
         # Mark attendance after 8 seconds
-        markAttendance_checkin(name)
+        markAttendance(name,action="check")
         print(f"Attendance marked for {name} has chekout sucessfully.")
         del face_recognition_start_time[name]  # Reset timer for this person
 

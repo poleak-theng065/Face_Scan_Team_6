@@ -1,6 +1,11 @@
 import customtkinter as ctk
 from PIL import Image
 
+# got back to page welcome
+def back():
+    import main
+    main.create_main_window()
+
 # Function to open the student data form
 def open_form():
     import inputData
@@ -16,7 +21,7 @@ def toggle_appearance_mode():
 def add_logo(frame):
     try:
         logo_image = ctk.CTkImage(
-            light_image=Image.open("path_to_logo_light.png"),
+            light_image=Image.open("photo_2024-11-13_10-56-58.jpg"),
             dark_image=Image.open("path_to_logo_dark.png"),
             size=(100, 100)
         )
@@ -74,16 +79,16 @@ def add_buttons(window, frame):
     toggle_button.place(relx=0.1, rely=0.05, anchor="center")
 
     # Exit button
-    exit_button = ctk.CTkButton(
+    back_button = ctk.CTkButton(
         window,
-        text="Exit",
-        command=window.destroy,
+        text="Go Back",
+        command=back,
         width=100,
         fg_color="#D9534F",
         hover_color="#C9302C",
         font=("Helvetica", 14)
     )
-    exit_button.place(relx=0.9, rely=0.05, anchor="center")
+    back_button.place(relx=0.9, rely=0.05, anchor="center")
 
 # Main function to create the welcome screen
 def create_welcome_screen():
