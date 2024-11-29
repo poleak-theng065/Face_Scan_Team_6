@@ -5,10 +5,11 @@ import pandas as pd
 from PIL import Image, ImageTk
 import uuid
 import customtkinter as ctk
-import checkAttandance
-# Check attandance 
-def attandence_check():
-    print(checkAttandance.main())
+import project.Interface_check as Interface_check
+# Continue Check attandance 
+def continue_check():
+    Interface_check.create_check_window()
+    
 image_path = None
 preview_label = None
 image_label = None
@@ -187,7 +188,7 @@ def create_buttons(center_frame,window):
     submit_button.grid(row=7, column=1, pady=10)
 
     verify_button = ctk.CTkButton(center_frame, text="Continue", 
-                                                command=attandence_check, 
+                                                command=continue_check, 
                                                 fg_color="blue", 
                                                 hover_color="lightblue",
                                                 width=200,
@@ -235,4 +236,5 @@ def create_student_data_form():
     # Buttons for submitting and verifying data
     create_buttons(center_frame,window)
     window.mainloop()
+
 

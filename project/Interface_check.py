@@ -4,12 +4,10 @@ from PIL import Image
 # Import modules for Check In and Check Out
 try:
     import main
-    import test
-    import checkOutverify
+    import checkAttendance
 except ImportError as e:
     print(f"Error importing module: {e}")
-
-# Back function to return to the main window
+# back 
 def back():
     result = main.create_main_window()
     update_feedback(f"Check In: {result}", "green")
@@ -17,16 +15,24 @@ def back():
 # Function to handle Check In
 def verify_data_checkin():
     check = "check-in"
-    test.verifydata(check)
+    checkAttendance.verifydata_attendance(check)
 
 # Function to handle Check Out
 def verify_data_checkout():
     check = "check-out"
-    test.verifydata(check)
+    checkAttendance.verifydata_attendance(check)
+
 
 # Function to update feedback label
 def update_feedback(message, color):
     feedback_label.configure(text=message, text_color=color)
+
+# Function to create the feedback label
+def create_feedback_label(frame):
+    global feedback_label
+    feedback_label = ctk.CTkLabel(frame, text="", font=("Arial", 14, "bold"))
+    feedback_label.grid(row=5, column=0, columnspan=7, pady=10)
+
 
 # Function to open the student data form
 def open_form():
@@ -49,12 +55,12 @@ def add_logo(frame):
         )
         logo_label = ctk.CTkLabel(frame, image=logo_image, text="")
         logo_label.place(relx=0.5, rely=0.15, anchor="center")
-        return None  # No error
     except FileNotFoundError:
-        return "Logo not found. Skipping display."
+        print("Logo images not found. Skipping logo display.")
 
 # Function to add welcome labels
 def add_welcome_labels(frame):
+    # Add welcome message
     label = ctk.CTkLabel(
         frame,
         text="Welcome to my Face Detection Smart System",
@@ -63,6 +69,7 @@ def add_welcome_labels(frame):
     )
     label.place(relx=0.5, rely=0.35, anchor="center")
 
+    # Add description
     description = ctk.CTkLabel(
         frame,
         text="A system to streamline attendance with advanced face detection.",
@@ -73,6 +80,7 @@ def add_welcome_labels(frame):
 
 # Function to add buttons to the screen
 def add_buttons(window, frame):
+   # Create the Check In button
     checkin_button = ctk.CTkButton(
         frame,
         text="Check In Now!",
@@ -80,12 +88,13 @@ def add_buttons(window, frame):
         width=200,
         height=50,
         corner_radius=10,
-        fg_color="#00FF00",
+        fg_color="#00FF00",  # Corrected color formatting
         hover_color="#003366",
         font=("Helvetica", 16)
     )
     checkin_button.place(relx=0.3, rely=0.7, anchor="center")
 
+    # Create the Check Out button
     checkout_button = ctk.CTkButton(
         frame,
         text="Check Out Now!",
@@ -93,12 +102,13 @@ def add_buttons(window, frame):
         width=200,
         height=50,
         corner_radius=10,
-        fg_color="#FF0000",
+        fg_color="#FF0000",  # Corrected color formatting
         hover_color="#000000",
         font=("Helvetica", 16)
     )
     checkout_button.place(relx=0.7, rely=0.7, anchor="center")
 
+    # Toggle Theme button
     toggle_button = ctk.CTkButton(
         window,
         text="Toggle Theme",
@@ -110,6 +120,7 @@ def add_buttons(window, frame):
     )
     toggle_button.place(relx=0.1, rely=0.05, anchor="center")
 
+    # Exit button
     back_button = ctk.CTkButton(
         window,
         text="Go Back",
@@ -126,32 +137,25 @@ def create_check_window():
     # Initialize the main window
     window = ctk.CTk()
     window.title("Welcome Screen")
-    window.geometry("1440x1024")
+    window.geometry("1440x1024")  # Set the window size
 
-    ctk.set_appearance_mode("System")
-    ctk.set_default_color_theme("green")
+    # Set appearance and color theme
+    ctk.set_appearance_mode("System")  # Options: "System", "Light", "Dark"
+    ctk.set_default_color_theme("green")  # Options: "blue", "green", "dark-blue"
 
-    # Create a welcome frame
+    # Create a welcome frame with specified width and height
     welcome_frame = ctk.CTkFrame(
         window, fg_color="white", corner_radius=20, width=800, height=500
     )
     welcome_frame.place(relx=0.5, rely=0.5, anchor="center")
 
     # Add components to the frame
-    logo_error = add_logo(welcome_frame)
+    add_logo(welcome_frame)
     add_welcome_labels(welcome_frame)
     add_buttons(window, welcome_frame)
-
-    # Create the feedback label
-    global feedback_label
-    feedback_label = ctk.CTkLabel(welcome_frame, text="", font=("Arial", 14, "bold"))
-    feedback_label.place(relx=0.5, rely=0.85, anchor="center")
-
-    # Show any logo errors in the feedback label
-    if logo_error:
-        update_feedback(logo_error, "orange")
 
     # Run the application
     window.mainloop()
 
-create_check_window()
+
+

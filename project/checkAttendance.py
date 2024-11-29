@@ -40,55 +40,45 @@ def markAttendance(name, action):
     sheet = workbook.active
     now = datetime.now()
     today_date = now.strftime('%Y-%m-%d')
-    current_time = now.strftime('%H:%M:%S')
+    current_time_24hr = now.strftime('%H:%M:%S')
+    current_time_ampm = now.strftime('%I:%M %p')  # AM/PM format for user-facing messages
 
     check_in_deadline = datetime.strptime('07:00:00', '%H:%M:%S').time()
     check_out_deadline = datetime.strptime('16:00:00', '%H:%M:%S').time()
 
-    for row in sheet.iter_rows(min_row=2, values_only=False):
-        print(f"Checking row: {row[0].value}, Date: {row[1].value}")  # Debug print
-
+    for row in sheet.iter_rows(min_row=2):
         if row[0].value == name and row[1].value == today_date:
-            print(f"Found existing record for {name} on {today_date}")  # Debug print
-            
-            if action == "check-out":
+            if action == "check-in":
                 if row[2].value is None:
-                    print(f"{name} has not checked in today. Check-in needed first.")  # Debug print
-                    return f"{name} hasn't checked in today. Please check-in first."
-                
+                    check_in_time = datetime.strptime(current_time_24hr, '%H:%M:%S').time()
+                    row[2].value = current_time_ampm
+                    row[3].value = "On time" if check_in_time <= check_in_deadline else "Late arrival"
+                    workbook.save(file_name)
+                    speak_greeting(name)
+                    return f"Check-in successful at {current_time_ampm}. Status: {row[3].value}."
+                else:
+                    return f"Check-in attempt failed: {name} has already checked in today."
+
+            elif action == "check-out":
                 if row[4].value is None:
-                    row[4].value = current_time
-                    check_out_time = datetime.strptime(current_time, '%H:%M:%S').time()
-                    row[5].value = "You are working on time." if check_out_time < check_out_deadline else "You are working late."
+                    check_out_time = datetime.strptime(current_time_24hr, '%H:%M:%S').time()
+                    row[4].value = current_time_ampm
+                    row[5].value = "Before end time" if check_out_time < check_out_deadline else "After end time"
                     workbook.save(file_name)
                     speak_greeting(name)
-                    return f"Check-out time recorded as {row[5].value} for {name}."
+                    return f"Check-out successful at {current_time_ampm}. Status: {row[5].value}."
                 else:
-                    return f"{name} has already checked out today."
+                    return f"Check-out attempt failed: {name} has already checked out today."
 
-            elif action == "check-in":
-                if row[2].value is None:  # Check if already checked in
-                    check_in_time = datetime.strptime(current_time, '%H:%M:%S').time()
-                    check_in_status = "You are leaving after hours." if check_in_time <= check_in_deadline else "You are overtime."
-                    row[2].value = current_time
-                    row[3].value = check_in_status
-                    workbook.save(file_name)
-                    speak_greeting(name)
-                    return f"Check-in time recorded as {check_in_status} for {name}."
-                else:
-                    return f"{name} has already checked in today."
-
-    # If no record exists for the name and date, create a new check-in record
+    # If no record exists, create a new entry
     if action == "check-in":
-        print(f"No existing record for {name} today, creating new check-in.")  # Debug print
-        check_in_time = datetime.strptime(current_time, '%H:%M:%S').time()
-        check_in_status = "You are leaving after hours." if check_in_time <= check_in_deadline else "You are overtime."
-        sheet.append([name, today_date, current_time, check_in_status, None, None])
+        check_in_time = datetime.strptime(current_time_24hr, '%H:%M:%S').time()
+        sheet.append([name, today_date, current_time_ampm, "On time" if check_in_time <= check_in_deadline else "Late arrival", None, None])
         workbook.save(file_name)
         speak_greeting(name)
-        return f"Check-in time recorded as {check_in_status} for {name}."
-
-    return f"No check-in record found for {name} to update check-out."
+        return f"New check-in recorded at {current_time_ampm}. Status: {'On time' if check_in_time <= check_in_deadline else 'Late arrival'}."
+    
+    return f"Action required: No prior check-in record found for {name}. Please check in first."
 
 
 def load_data_from_excel(excel_file):
@@ -220,7 +210,7 @@ def process_face(img, facesCurFrame, encodesCurFrame, encodeListKnown, className
 
     return img, face_recognition_start_time, frame_count_dict
 
-def verifydata(action):
+def verifydata_attendance(action):
     """
     Main function to capture webcam feed, detect faces, and process attendance.
     """
@@ -256,6 +246,3 @@ def verifydata(action):
 
     cap.release()
     cv2.destroyAllWindows()
-
-# Example usage
-verifydata("check-out")

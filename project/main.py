@@ -4,7 +4,7 @@ from PIL import Image
 # Import modules for Check In and Check Out
 try:
     import newuser
-    import oldUser
+    import Interface_check
 except ImportError as e:
     print(f"Error importing module: {e}")
 
@@ -15,7 +15,7 @@ def newCustomer():
 
 # Function to handle Check Out
 def oldCustomer():
-    result = oldUser.create_check_window()
+    result = Interface_check.create_check_window()
     update_feedback(f"Check Out: {result}", "red")
 
 # Function to update feedback label
