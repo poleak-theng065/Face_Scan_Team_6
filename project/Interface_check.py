@@ -1,22 +1,26 @@
 import customtkinter as ctk
-from PIL import Image
 
 # Import modules for Check In and Check Out
 try:
-    import checkInVerify
-    import checkOutverify
+    import main
+    import checkAttendance
 except ImportError as e:
     print(f"Error importing module: {e}")
+# back 
+def back():
+    result = main.create_main_window()
+    update_feedback(f"Check In: {result}", "green")
 
 # Function to handle Check In
 def verify_data_checkin():
-    result = checkInVerify.verifydata_checkin()
-    update_feedback(f"Check In: {result}", "green")
+    check = "check-in"
+    checkAttendance.verifydata_attendance(check)
 
 # Function to handle Check Out
 def verify_data_checkout():
-    result = checkOutverify.verifydata_checkout()
-    update_feedback(f"Check Out: {result}", "red")
+    check = "check-out"
+    checkAttendance.verifydata_attendance(check)
+
 
 # Function to update feedback label
 def update_feedback(message, color):
@@ -40,18 +44,6 @@ def toggle_appearance_mode():
     new_mode = "Dark" if current_mode == "Light" else "Light"
     ctk.set_appearance_mode(new_mode)
 
-# Function to add a logo to the frame
-def add_logo(frame):
-    try:
-        logo_image = ctk.CTkImage(
-            light_image=Image.open("path_to_logo_light.png"),
-            dark_image=Image.open("path_to_logo_dark.png"),
-            size=(100, 100)
-        )
-        logo_label = ctk.CTkLabel(frame, image=logo_image, text="")
-        logo_label.place(relx=0.5, rely=0.15, anchor="center")
-    except FileNotFoundError:
-        print("Logo images not found. Skipping logo display.")
 
 # Function to add welcome labels
 def add_welcome_labels(frame):
@@ -116,19 +108,19 @@ def add_buttons(window, frame):
     toggle_button.place(relx=0.1, rely=0.05, anchor="center")
 
     # Exit button
-    exit_button = ctk.CTkButton(
+    back_button = ctk.CTkButton(
         window,
-        text="Exit",
-        command=window.destroy,
+        text="Go Back",
+        command=back,
         width=100,
         fg_color="#D9534F",
         hover_color="#C9302C",
         font=("Helvetica", 14)
     )
-    exit_button.place(relx=0.9, rely=0.05, anchor="center")
+    back_button.place(relx=0.9, rely=0.05, anchor="center")
 
 # Main function to create the welcome screen
-def create_main_window():
+def create_check_window():
     # Initialize the main window
     window = ctk.CTk()
     window.title("Welcome Screen")
@@ -144,8 +136,7 @@ def create_main_window():
     )
     welcome_frame.place(relx=0.5, rely=0.5, anchor="center")
 
-    # Add components to the frame
-    add_logo(welcome_frame)
+
     add_welcome_labels(welcome_frame)
     add_buttons(window, welcome_frame)
 

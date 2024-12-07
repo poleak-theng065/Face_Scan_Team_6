@@ -5,10 +5,11 @@ import pandas as pd
 from PIL import Image, ImageTk
 import uuid
 import customtkinter as ctk
-import checkAttandance
-# Check attandance 
-def attandence_check():
-    print(checkAttandance.main())
+import project.Interface_check as Interface_check
+# Continue Check attandance 
+def continue_check():
+    Interface_check.create_check_window()
+    
 image_path = None
 preview_label = None
 image_label = None
@@ -33,9 +34,6 @@ def select_image():
             # Convert to CTkImage for proper scaling
             img_ctk = ctk.CTkImage(img, size=(100, 100))
 
-            # Update preview label with CTkImage
-            preview_label.configure(image=img_ctk)
-            preview_label.image = img_ctk  # Keep a reference to avoid garbage collection
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load image: {e}")
     else:
@@ -78,7 +76,7 @@ def clear_entries():
     class_entry.delete(0, tk.END)
     gender_var.set(None)
     image_label.configure(text="No Image Selected")
-    preview_label.configure(image="")
+  
 
 # Function to create and return gender input options
 def create_gender_input(center_frame):
@@ -115,10 +113,6 @@ def create_image_section(center_frame):
     image_label.grid(row=6, column=0, columnspan=2, padx=20, pady=10, sticky="w")
     select_image_button = ctk.CTkButton(center_frame, text="Select Image", command=select_image)
     select_image_button.grid(row=6, column=2, padx=10, pady=10)
-
-    preview_label = ctk.CTkLabel(center_frame, text="", width=100, height=100, fg_color="gray")
-    preview_label.grid(row=6, column=3, padx=10, pady=10)
-    
 # save data to exel
 def save_data():
     name = name_entry.get()
@@ -187,7 +181,7 @@ def create_buttons(center_frame,window):
     submit_button.grid(row=7, column=1, pady=10)
 
     verify_button = ctk.CTkButton(center_frame, text="Continue", 
-                                                command=attandence_check, 
+                                                command=continue_check, 
                                                 fg_color="blue", 
                                                 hover_color="lightblue",
                                                 width=200,
@@ -235,4 +229,5 @@ def create_student_data_form():
     # Buttons for submitting and verifying data
     create_buttons(center_frame,window)
     window.mainloop()
+
 

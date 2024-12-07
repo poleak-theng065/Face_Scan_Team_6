@@ -1,10 +1,14 @@
 import customtkinter as ctk
-from PIL import Image
+# got back to page welcome
+def back():
+    import main
+    main.create_main_window()
 
 # Function to open the student data form
 def open_form():
     import inputData
     inputData.create_student_data_form()
+print(open_form(),"It's working now")
 
 # Function to toggle between light and dark modes
 def toggle_appearance_mode():
@@ -12,18 +16,6 @@ def toggle_appearance_mode():
     new_mode = "Dark" if current_mode == "Light" else "Light"
     ctk.set_appearance_mode(new_mode)
 
-# Function to add a logo to the frame
-def add_logo(frame):
-    try:
-        logo_image = ctk.CTkImage(
-            light_image=Image.open("path_to_logo_light.png"),
-            dark_image=Image.open("path_to_logo_dark.png"),
-            size=(100, 100)
-        )
-        logo_label = ctk.CTkLabel(frame, image=logo_image, text="")
-        logo_label.place(relx=0.5, rely=0.15, anchor="center")
-    except FileNotFoundError:
-        print("Logo images not found. Skipping logo display.")
 
 # Function to add welcome labels
 def add_welcome_labels(frame):
@@ -74,16 +66,16 @@ def add_buttons(window, frame):
     toggle_button.place(relx=0.1, rely=0.05, anchor="center")
 
     # Exit button
-    exit_button = ctk.CTkButton(
+    back_button = ctk.CTkButton(
         window,
-        text="Exit",
-        command=window.destroy,
+        text="Go Back",
+        command=back,
         width=100,
         fg_color="#D9534F",
         hover_color="#C9302C",
         font=("Helvetica", 14)
     )
-    exit_button.place(relx=0.9, rely=0.05, anchor="center")
+    back_button.place(relx=0.9, rely=0.05, anchor="center")
 
 # Main function to create the welcome screen
 def create_welcome_screen():
@@ -102,8 +94,7 @@ def create_welcome_screen():
     )
     welcome_frame.place(relx=0.5, rely=0.5, anchor="center")
 
-    # Add components to the frame
-    add_logo(welcome_frame)
+
     add_welcome_labels(welcome_frame)
     add_buttons(window, welcome_frame)
 
